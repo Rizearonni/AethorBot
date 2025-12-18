@@ -29,11 +29,15 @@ class Admin(commands.Cog):
     async def reload_prefix(self, ctx: commands.Context, extension: str = ""):
         if not extension:
             for ext in list(self.bot.extensions.keys()):
-                self.bot.reload_extension(ext)
+                try:
+                    await self.bot.reload_extension(ext)
+                except Exception as e:
+                    await ctx.reply(f"Failed to reload `{ext}`: {e}")
+                    return
             await ctx.reply("Reloaded all cogs.")
             return
         try:
-            self.bot.reload_extension(extension)
+            await self.bot.reload_extension(extension)
             await ctx.reply(f"Reloaded `{extension}`.")
         except Exception as e:
             await ctx.reply(f"Failed to reload `{extension}`: {e}")

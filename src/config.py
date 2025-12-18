@@ -62,3 +62,60 @@ try:
     SYNC_COOLDOWN_SECONDS: int = int(os.getenv("SYNC_COOLDOWN_SECONDS", "30"))
 except ValueError:
     SYNC_COOLDOWN_SECONDS = 30
+
+# Onboarding / verification
+VERIFIED_ROLE_ID: Optional[int] = None
+try:
+    vrole = os.getenv("VERIFIED_ROLE_ID", "").strip()
+    VERIFIED_ROLE_ID = int(vrole) if vrole else None
+except ValueError:
+    VERIFIED_ROLE_ID = None
+
+VERIFY_LOG_CHANNEL_ID: Optional[int] = None
+try:
+    vlc = os.getenv("VERIFY_LOG_CHANNEL_ID", "").strip()
+    VERIFY_LOG_CHANNEL_ID = int(vlc) if vlc else None
+except ValueError:
+    VERIFY_LOG_CHANNEL_ID = None
+
+# Backups
+BACKUP_ENABLED: bool = _get_bool(os.getenv("BACKUP_ENABLED", "true"))
+try:
+    BACKUP_MAX_KEEP: int = int(os.getenv("BACKUP_MAX_KEEP", "10"))
+except ValueError:
+    BACKUP_MAX_KEEP = 10
+
+# Moderation
+MOD_LOG_CHANNEL_ID: Optional[int] = None
+try:
+    mlc = os.getenv("MOD_LOG_CHANNEL_ID", "").strip()
+    MOD_LOG_CHANNEL_ID = int(mlc) if mlc else None
+except ValueError:
+    MOD_LOG_CHANNEL_ID = None
+
+MUTE_ROLE_ID: Optional[int] = None
+try:
+    mrole = os.getenv("MUTE_ROLE_ID", "").strip()
+    MUTE_ROLE_ID = int(mrole) if mrole else None
+except ValueError:
+    MUTE_ROLE_ID = None
+
+# Healthcheck
+HEALTHCHECK_ENABLED: bool = _get_bool(os.getenv("HEALTHCHECK_ENABLED", "false"))
+_panel_port = os.getenv("PORT", "")  # Pterodactyl panels often expose PORT
+try:
+    HEALTHCHECK_PORT: int = int(os.getenv("HEALTHCHECK_PORT", _panel_port or "8080"))
+except ValueError:
+    HEALTHCHECK_PORT = 8080
+
+# File logging
+FILE_LOGS_ENABLED: bool = _get_bool(os.getenv("FILE_LOGS_ENABLED", "true"))
+FILE_LOGS_PATH: str = os.getenv("FILE_LOGS_PATH", os.path.join("logs", "aethor.log"))
+try:
+    FILE_LOGS_MAX_BYTES: int = int(os.getenv("FILE_LOGS_MAX_BYTES", "1048576"))  # 1MB
+except ValueError:
+    FILE_LOGS_MAX_BYTES = 1048576
+try:
+    FILE_LOGS_BACKUP_COUNT: int = int(os.getenv("FILE_LOGS_BACKUP_COUNT", "5"))
+except ValueError:
+    FILE_LOGS_BACKUP_COUNT = 5

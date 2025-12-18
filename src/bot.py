@@ -1,28 +1,57 @@
 import argparse
 import logging
 import sys
+import asyncio
+import time
 
 import discord
 from discord.ext import commands
 
-from src.config import DISCORD_TOKEN, require_token, GUILD_ID
+from src.config import (
+    DISCORD_TOKEN,
+    require_token,
+    GUILD_ID,
+    HEALTHCHECK_ENABLED,
+    HEALTHCHECK_PORT,
+)
 from src.utils.logger import setup_logging
+from src.utils.health import make_status_func, start_health_server
 
-
-def load_cogs(bot: commands.Bot) -> None:
+async def load_cogs(bot: commands.Bot) -> None:
     logger = logging.getLogger("Aethor")
-    for ext in ("src.cogs.general", "src.cogs.admin", "src.cogs.minecraft", "src.cogs.management"):
+    for ext in (
+        "src.cogs.general",
+        "src.cogs.admin",
+        "src.cogs.minecraft",
+        "src.cogs.management",
+        "src.cogs.onboarding",
+        "src.cogs.moderation",
+    ):
         try:
-            bot.load_extension(ext)
+            await bot.load_extension(ext)
             logger.info(f"Loaded cog {ext}")
         except Exception as e:
             logger.exception(f"Failed to load {ext}: {e}")
 
 
+class AethorBot(commands.Bot):
+    async def setup_hook(self) -> None:
+        await load_cogs(self)
+        # Start healthcheck server after cogs load
+        if HEALTHCHECK_ENABLED:
+            started_at = getattr(self, "_started_at", time.time())
+            self._started_at = started_at
+            try:
+                start_health_server(HEALTHCHECK_PORT, make_status_func(self, started_at))
+                logging.getLogger("Aethor").info(f"Healthcheck server listening on :{HEALTHCHECK_PORT}")
+            except Exception as e:
+                logging.getLogger("Aethor").warning(f"Failed to start healthcheck server: {e}")
+
+
 def build_bot() -> commands.Bot:
     intents = discord.Intents.default()
     intents.message_content = True  # for prefix commands
-    bot = commands.Bot(command_prefix="!", intents=intents)
+    bot = AethorBot(command_prefix="!", intents=intents)
     return bot
 
 
@@ -36,11 +65,16 @@ def main() -> None:
     logger = logging.getLogger("Aethor")
 
     bot = build_bot()
-    load_cogs(bot)
 
     if args.check:
-        logger.info("Smoke-check complete: config imported and cogs loaded.")
-        sys.exit(0)
+        # Load extensions in an async context to validate without running the bot
+        try:
+            asyncio.run(bot.setup_hook())
+            logger.info("Smoke-check complete: config imported and cogs loaded.")
+            sys.exit(0)
+        except Exception as e:
+            logger.exception(f"Smoke-check failed during extension load: {e}")
+            sys.exit(1)
 
     require_token()
 

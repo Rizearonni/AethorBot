@@ -10,6 +10,11 @@ from src.utils.store import (
 )
 from src.utils import rcon
 from src.config import AUTO_SYNC_ENABLED, AUTO_SYNC_HOUR, AUTO_SYNC_MINUTE, AUTO_SYNC_REMOVE_EXTRAS, LOG_CHANNEL_ID, SYNC_COOLDOWN_SECONDS
+import csv
+import io
+import re
+import json
+from src.utils.backup import backup_whitelist
 
 
 class Management(commands.Cog):
@@ -208,6 +213,7 @@ class Management(commands.Cog):
                     await chan.send(msg)
                 except Exception:
                     pass
+        backup_whitelist()
 
     @auto_sync_loop.before_loop
     async def before_auto_sync(self):
@@ -270,6 +276,7 @@ class Management(commands.Cog):
 
         await ctx.reply("Sync complete.\n" + "\n".join(summary))
         self._sync_last[ctx.author.id] = datetime.datetime.now()
+        backup_whitelist()
 
         if LOG_CHANNEL_ID:
             chan = self.bot.get_channel(LOG_CHANNEL_ID)
@@ -330,6 +337,7 @@ class Management(commands.Cog):
 
         await interaction.response.send_message("Sync complete.\n" + "\n".join(summary), ephemeral=True)
         self._sync_last[interaction.user.id] = datetime.datetime.now()
+        backup_whitelist()
 
         if LOG_CHANNEL_ID:
             chan = self.bot.get_channel(LOG_CHANNEL_ID)
@@ -384,6 +392,126 @@ class Management(commands.Cog):
             f"Would remove ({len(to_remove)}): " + ", ".join(to_remove[:20]),
         ]
         await interaction.response.send_message("Diff preview:\n" + "\n".join(lines), ephemeral=True)
+
+    # --- Import helpers ---
+    _name_re = re.compile(r"^[A-Za-z0-9_]{3,16}$")
+
+    def _parse_names_from_bytes(self, data: bytes) -> list[str]:
+        # Try UTF-8 with BOM support
+        text = data.decode("utf-8-sig", errors="ignore")
+        names: list[str] = []
+        # If looks like CSV, parse; else splitlines
+        try:
+            sniffer = csv.Sniffer()
+            dialect = sniffer.sniff(text[:1024])
+            reader = csv.reader(io.StringIO(text), dialect)
+            for row in reader:
+                for cell in row:
+                    cell = cell.strip()
+                    if cell:
+                        names.append(cell)
+        except Exception:
+            # Fallback: one name per line, allow commas
+            for line in text.splitlines():
+                for part in line.split(','):
+                    part = part.strip()
+                    if part:
+                        names.append(part)
+        # Normalize and validate
+        out = []
+        seen = set()
+        for n in names:
+            n = n.strip()
+            if not n or n in seen:
+                continue
+            if self._name_re.match(n):
+                seen.add(n)
+                out.append(n)
+        return out
+
+    @app_commands.command(name="whitelist_import", description="Import IGNs from a CSV/TXT attachment; optionally apply via RCON")
+    @app_commands.default_permissions(administrator=True)
+    async def whitelist_import_slash(self, interaction: discord.Interaction, file: discord.Attachment, apply_rcon: bool = False):
+        await interaction.response.defer(ephemeral=True)
+        # Basic size guard: 5 MB
+        if file.size and file.size > 5 * 1024 * 1024:
+            await interaction.followup.send("File too large (max 5MB).", ephemeral=True)
+            return
+        try:
+            data = await file.read()
+        except Exception as e:
+            await interaction.followup.send(f"Failed to read file: {e}", ephemeral=True)
+            return
+
+        names = self._parse_names_from_bytes(data)
+        if not names:
+            await interaction.followup.send("No valid names found in file.", ephemeral=True)
+            return
+
+        from src.utils.store import add_to_whitelist, read_whitelist
+        added = 0
+        already = 0
+        for n in names:
+            ok = add_to_whitelist(n)
+            if ok:
+                added += 1
+            else:
+                already += 1
+
+        rcon_applied = 0
+        rcon_skipped = 0
+        if apply_rcon and rcon.is_enabled():
+            for n in names:
+                # Only try to add those that are now present; we don't track per-name add_ok, so attempt anyway
+                try:
+                    rcon.whitelist_add(n)
+                    rcon_applied += 1
+                except Exception:
+                    rcon_skipped += 1
+        elif apply_rcon and not rcon.is_enabled():
+            rcon_skipped = len(names)
+
+        summary = [
+            f"Imported names: {len(names)}",
+            f"Added to local whitelist: {added}",
+            f"Already present: {already}",
+        ]
+        if apply_rcon:
+            summary.append(f"RCON applied: {rcon_applied}; failed/skipped: {rcon_skipped}")
+
+        await interaction.followup.send("Import complete.\n" + "\n".join(summary), ephemeral=True)
+        backup_whitelist()
+
+        if LOG_CHANNEL_ID:
+            chan = self.bot.get_channel(LOG_CHANNEL_ID)
+            if isinstance(chan, discord.TextChannel):
+                try:
+                    await chan.send(
+                        f"[Aethor] Whitelist import by {interaction.user.mention}: added {added}, already {already}."
+                        + (f" RCON applied {rcon_applied}." if apply_rcon and rcon_applied else "")
+                    )
+                except Exception:
+                    pass
+
+    @app_commands.command(name="whitelist_export", description="Export whitelist as JSON or CSV file")
+    @app_commands.default_permissions(administrator=True)
+    async def whitelist_export_slash(self, interaction: discord.Interaction, as_csv: bool = False):
+        from src.utils.store import read_whitelist
+
+        await interaction.response.defer(ephemeral=True)
+        names = read_whitelist()
+        if as_csv:
+            content = "\n".join(names).encode("utf-8")
+            filename = "whitelist.csv"
+        else:
+            content = json.dumps(names, ensure_ascii=False, indent=2).encode("utf-8")
+            filename = "whitelist.json"
+
+        file = discord.File(fp=io.BytesIO(content), filename=filename)
+        try:
+            await interaction.followup.send(content="Exported whitelist.", file=file, ephemeral=True)
+        except Exception as e:
+            await interaction.followup.send(f"Failed to send file: {e}", ephemeral=True)
 
     # Status commands
     def _next_sync_text(self) -> str:
