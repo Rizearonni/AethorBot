@@ -13,25 +13,22 @@ A Python Discord bot for Minecraft MMORPG server, Aethor.
  - Moderation: kick/ban/unban, timeout/untimeout, mute/unmute (role), purge, slowmode, lock/unlock, with logging
 
 ## Quick Start (Windows)
-1. Create venv:
-   ```powershell
-   py -m venv .venv
-   .\.venv\Scripts\Activate
-   ```
+1. Install Poetry:
+   https://python-poetry.org/docs/#installation
 2. Install deps:
    ```powershell
-   pip install -r requirements.txt
+   poetry install
    ```
 3. Configure environment:
    - Copy `.env.example` to `.env`
    - Set `DISCORD_TOKEN`, optional `GUILD_ID`, `MC_SERVER`
 4. Smoke-check (no token needed):
    ```powershell
-   python -m src.bot --check
+   poetry run python -m src.bot --check
    ```
 5. Run bot (requires `DISCORD_TOKEN`):
    ```powershell
-   python -m src.bot --sync
+   poetry run python -m src.bot --sync
    ```
 
 ## Environment Variables
@@ -55,21 +52,19 @@ A Python Discord bot for Minecraft MMORPG server, Aethor.
 ## Operations
 - Install dependencies and optional voice support:
    ```powershell
-   pip install -r requirements.txt
-   # Optional (silences voice warning):
-   pip install PyNaCl
+   poetry install
    ```
 - Validate setup without logging in:
    ```powershell
-   python -m src.bot --check
+   poetry run python -m src.bot --check
    ```
 - First run and slash sync:
    ```powershell
-   python -m src.bot --sync
+   poetry run python -m src.bot --sync
    ```
 - Windows service (optional): use NSSM to run the bot in the background
    ```powershell
-   nssm install AethorBot "C:\\Path\\to\\python.exe" "-m" "src.bot" "--sync"
+   nssm install AethorBot "C:\\Path\\to\\poetry.exe" "run" "python" "-m" "src.bot" "--sync"
    nssm set AethorBot AppDirectory "D:\\AethorBot"
    nssm start AethorBot
    ```
@@ -101,8 +96,7 @@ A Python Discord bot for Minecraft MMORPG server, Aethor.
    - After the first sync, you can use `python -m src.bot`.
 - Install dependencies (if the egg supports Auto-Install): click Install. Otherwise run in Console:
    ```bash
-   pip install --upgrade pip
-   pip install -r requirements.txt
+   poetry install
    ```
 - First run: Start the server. Watch the console for "Synced" and "Logged in as".
    - Health: The panel may expose the assigned port for checks; the health endpoint returns 200 JSON when the bot is up.
