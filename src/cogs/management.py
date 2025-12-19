@@ -1,20 +1,28 @@
+import csv
+import datetime
+import io
+import json
+import re
+
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
-import datetime
 
-from src.utils.store import (
-    add_to_whitelist,
-    remove_from_whitelist,
-    read_whitelist,
+from src.config import (
+    AUTO_SYNC_ENABLED,
+    AUTO_SYNC_HOUR,
+    AUTO_SYNC_MINUTE,
+    AUTO_SYNC_REMOVE_EXTRAS,
+    LOG_CHANNEL_ID,
+    SYNC_COOLDOWN_SECONDS,
 )
 from src.utils import rcon
-from src.config import AUTO_SYNC_ENABLED, AUTO_SYNC_HOUR, AUTO_SYNC_MINUTE, AUTO_SYNC_REMOVE_EXTRAS, LOG_CHANNEL_ID, SYNC_COOLDOWN_SECONDS
-import csv
-import io
-import re
-import json
 from src.utils.backup import backup_whitelist
+from src.utils.store import (
+    add_to_whitelist,
+    read_whitelist,
+    remove_from_whitelist,
+)
 
 
 class Management(commands.Cog):
@@ -56,7 +64,9 @@ class Management(commands.Cog):
     # Role management (slash)
     @app_commands.command(name="role_grant", description="Grant a role to a member")
     @app_commands.default_permissions(administrator=True)
-    async def role_grant_slash(self, interaction: discord.Interaction, role: discord.Role, member: discord.Member | None = None):
+    async def role_grant_slash(
+        self, interaction: discord.Interaction, role: discord.Role, member: discord.Member | None = None
+    ):
         target = member or interaction.user
         try:
             await target.add_roles(role, reason=f"Granted by {interaction.user}")
@@ -66,11 +76,15 @@ class Management(commands.Cog):
 
     @app_commands.command(name="role_revoke", description="Revoke a role from a member")
     @app_commands.default_permissions(administrator=True)
-    async def role_revoke_slash(self, interaction: discord.Interaction, role: discord.Role, member: discord.Member | None = None):
+    async def role_revoke_slash(
+        self, interaction: discord.Interaction, role: discord.Role, member: discord.Member | None = None
+    ):
         target = member or interaction.user
         try:
             await target.remove_roles(role, reason=f"Revoked by {interaction.user}")
-            await interaction.response.send_message(f"Revoked role {role.mention} from {target.mention}.", ephemeral=True)
+            await interaction.response.send_message(
+                f"Revoked role {role.mention} from {target.mention}.", ephemeral=True
+            )
         except Exception as e:
             await interaction.response.send_message(f"Failed to revoke role: {e}", ephemeral=True)
 
@@ -282,10 +296,7 @@ class Management(commands.Cog):
             chan = self.bot.get_channel(LOG_CHANNEL_ID)
             if isinstance(chan, discord.TextChannel):
                 ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-                msg = (
-                    f"[Aethor] Manual whitelist sync by {ctx.author.mention} ({ts})\n"
-                    + "\n".join(summary)
-                )
+                msg = f"[Aethor] Manual whitelist sync by {ctx.author.mention} ({ts})\n" + "\n".join(summary)
                 try:
                     await chan.send(msg)
                 except Exception:
@@ -343,10 +354,7 @@ class Management(commands.Cog):
             chan = self.bot.get_channel(LOG_CHANNEL_ID)
             if isinstance(chan, discord.TextChannel):
                 ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-                msg = (
-                    f"[Aethor] Manual whitelist sync by {interaction.user.mention} ({ts})\n"
-                    + "\n".join(summary)
-                )
+                msg = f"[Aethor] Manual whitelist sync by {interaction.user.mention} ({ts})\n" + "\n".join(summary)
                 try:
                     await chan.send(msg)
                 except Exception:
@@ -413,7 +421,7 @@ class Management(commands.Cog):
         except Exception:
             # Fallback: one name per line, allow commas
             for line in text.splitlines():
-                for part in line.split(','):
+                for part in line.split(","):
                     part = part.strip()
                     if part:
                         names.append(part)
@@ -429,9 +437,13 @@ class Management(commands.Cog):
                 out.append(n)
         return out
 
-    @app_commands.command(name="whitelist_import", description="Import IGNs from a CSV/TXT attachment; optionally apply via RCON")
+    @app_commands.command(
+        name="whitelist_import", description="Import IGNs from a CSV/TXT attachment; optionally apply via RCON"
+    )
     @app_commands.default_permissions(administrator=True)
-    async def whitelist_import_slash(self, interaction: discord.Interaction, file: discord.Attachment, apply_rcon: bool = False):
+    async def whitelist_import_slash(
+        self, interaction: discord.Interaction, file: discord.Attachment, apply_rcon: bool = False
+    ):
         await interaction.response.defer(ephemeral=True)
         # Basic size guard: 5 MB
         if file.size and file.size > 5 * 1024 * 1024:
@@ -449,6 +461,7 @@ class Management(commands.Cog):
             return
 
         from src.utils.store import add_to_whitelist, read_whitelist
+
         added = 0
         already = 0
         for n in names:

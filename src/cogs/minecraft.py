@@ -1,8 +1,8 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-
 from mcstatus import JavaServer
+
 from src.config import MC_SERVER
 
 

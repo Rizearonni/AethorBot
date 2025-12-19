@@ -2,12 +2,12 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from src.utils.mojang import fetch_uuid
-from src.utils.store import add_to_whitelist
-from src.utils.players import set_player, get_player, delete_player
-from src.utils import rcon
 from src.config import VERIFIED_ROLE_ID, VERIFY_LOG_CHANNEL_ID
+from src.utils import rcon
 from src.utils.mc_online import is_player_online
+from src.utils.mojang import fetch_uuid
+from src.utils.players import delete_player, get_player, set_player
+from src.utils.store import add_to_whitelist
 
 
 class Onboarding(commands.Cog):
@@ -141,9 +141,7 @@ class Onboarding(commands.Cog):
             from src.utils.store import remove_from_whitelist
 
             removed = remove_from_whitelist(mc_name)
-            removed_msg = (
-                f"Removed {mc_name} from whitelist. " if removed else f"{mc_name} not on whitelist. "
-            )
+            removed_msg = f"Removed {mc_name} from whitelist. " if removed else f"{mc_name} not on whitelist. "
             if removed and rcon.is_enabled():
                 try:
                     r = rcon.whitelist_remove(mc_name)

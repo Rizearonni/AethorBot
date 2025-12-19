@@ -72,9 +72,7 @@ class Admin(commands.Cog):
         try:
             if GUILD_ID:
                 await self.bot.tree.sync(guild=discord.Object(id=GUILD_ID))
-                await interaction.response.send_message(
-                    f"Synced slash commands to guild {GUILD_ID}.", ephemeral=True
-                )
+                await interaction.response.send_message(f"Synced slash commands to guild {GUILD_ID}.", ephemeral=True)
             else:
                 await self.bot.tree.sync()
                 await interaction.response.send_message("Synced global slash commands.", ephemeral=True)

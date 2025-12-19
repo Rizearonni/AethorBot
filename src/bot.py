@@ -1,7 +1,7 @@
 import argparse
+import asyncio
 import logging
 import sys
-import asyncio
 import time
 
 import discord
@@ -9,13 +9,14 @@ from discord.ext import commands
 
 from src.config import (
     DISCORD_TOKEN,
-    require_token,
     GUILD_ID,
     HEALTHCHECK_ENABLED,
     HEALTHCHECK_PORT,
+    require_token,
 )
-from src.utils.logger import setup_logging
 from src.utils.health import make_status_func, start_health_server
+from src.utils.logger import setup_logging
+
 
 async def load_cogs(bot: commands.Bot) -> None:
     logger = logging.getLogger("Aethor")

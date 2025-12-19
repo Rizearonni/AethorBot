@@ -1,6 +1,5 @@
 import json
 import os
-from typing import List
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "data")
 WL_PATH = os.path.normpath(os.path.join(DATA_DIR, "whitelist.json"))
@@ -13,18 +12,18 @@ def ensure_files() -> None:
             json.dump([], f)
 
 
-def read_whitelist() -> List[str]:
+def read_whitelist() -> list[str]:
     ensure_files()
-    with open(WL_PATH, "r", encoding="utf-8") as f:
+    with open(WL_PATH, encoding="utf-8") as f:
         data = json.load(f)
         if not isinstance(data, list):
             return []
         return [str(x) for x in data]
 
 
-def write_whitelist(entries: List[str]) -> None:
+def write_whitelist(entries: list[str]) -> None:
     ensure_files()
-    entries = sorted(set(e.strip() for e in entries if e.strip()))
+    entries = sorted({e.strip() for e in entries if e.strip()})
     with open(WL_PATH, "w", encoding="utf-8") as f:
         json.dump(entries, f, ensure_ascii=False, indent=2)
 

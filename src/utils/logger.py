@@ -22,7 +22,10 @@ def setup_logging(level: int = logging.INFO) -> None:
             file_handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)s:%(name)s: %(message)s"))
             root_logger = logging.getLogger()
             # Avoid adding multiple duplicate handlers if called twice
-            if not any(isinstance(h, RotatingFileHandler) and h.baseFilename == file_handler.baseFilename for h in root_logger.handlers):
+            if not any(
+                isinstance(h, RotatingFileHandler) and h.baseFilename == file_handler.baseFilename
+                for h in root_logger.handlers
+            ):
                 root_logger.addHandler(file_handler)
         except Exception as e:  # pragma: no cover
             logging.getLogger("Aethor").warning(f"Failed to enable file logging: {e}")

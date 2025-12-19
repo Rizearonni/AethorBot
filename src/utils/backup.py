@@ -1,8 +1,7 @@
-import os
-import json
-import glob
 import datetime
-from typing import List
+import glob
+import json
+import os
 
 from src.config import BACKUP_ENABLED, BACKUP_MAX_KEEP
 from src.utils.store import read_whitelist
@@ -15,7 +14,7 @@ def ensure_dir() -> None:
     os.makedirs(BACKUP_DIR, exist_ok=True)
 
 
-def list_backups() -> List[str]:
+def list_backups() -> list[str]:
     ensure_dir()
     pattern = os.path.join(BACKUP_DIR, "whitelist-*.json")
     return sorted(glob.glob(pattern))

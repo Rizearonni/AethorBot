@@ -1,12 +1,10 @@
-from typing import List
-
 from mcstatus import JavaServer
 
 from src.config import MC_SERVER
 from src.utils import rcon
 
 
-def _parse_list_output(raw: str) -> List[str]:
+def _parse_list_output(raw: str) -> list[str]:
     # Typical: "There are X of a max of Y players online: name1, name2"
     if ":" in raw:
         names = raw.split(":", 1)[1]
@@ -14,7 +12,7 @@ def _parse_list_output(raw: str) -> List[str]:
     return []
 
 
-async def online_players() -> List[str]:
+async def online_players() -> list[str]:
     # Prefer RCON if available for reliability
     if rcon.is_enabled():
         try:

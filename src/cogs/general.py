@@ -13,9 +13,7 @@ class General(commands.Cog):
 
     @app_commands.command(name="ping", description="Check bot latency")
     async def ping_slash(self, interaction: discord.Interaction):
-        await interaction.response.send_message(
-            f"Pong! {round(self.bot.latency * 1000)}ms"
-        )
+        await interaction.response.send_message(f"Pong! {round(self.bot.latency * 1000)}ms")
 
     @commands.command(name="about")
     async def about_prefix(self, ctx: commands.Context):
