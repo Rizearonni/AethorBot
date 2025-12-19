@@ -1,8 +1,6 @@
-from typing import List
-
 from mcrcon import MCRcon
 
-from src.config import RCON_ENABLED, RCON_HOST, RCON_PORT, RCON_PASSWORD
+from src.config import RCON_ENABLED, RCON_HOST, RCON_PASSWORD, RCON_PORT
 
 
 def is_enabled() -> bool:
@@ -31,7 +29,7 @@ def whitelist_remove(name: str) -> str:
     return send_command(f"whitelist remove {name}")
 
 
-def whitelist_list() -> List[str]:
+def whitelist_list() -> list[str]:
     raw = send_command("whitelist list")
     # Typical response: "There are N whitelisted players: name1, name2"
     parts = raw.split(":", 1)

@@ -1,20 +1,18 @@
 import os
-from typing import List, Optional
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
-DISCORD_TOKEN: Optional[str] = os.getenv("DISCORD_TOKEN")
-GUILD_ID: Optional[int] = None
+DISCORD_TOKEN: str | None = os.getenv("DISCORD_TOKEN")
+GUILD_ID: int | None = None
 try:
     gid = os.getenv("GUILD_ID", "0").strip()
     GUILD_ID = int(gid) or None
 except ValueError:
     GUILD_ID = None
 
-ADMIN_ROLE_IDS: List[int] = [
-    int(x) for x in os.getenv("ADMIN_ROLE_IDS", "").split(",") if x.strip().isdigit()
-]
+ADMIN_ROLE_IDS: list[int] = [int(x) for x in os.getenv("ADMIN_ROLE_IDS", "").split(",") if x.strip().isdigit()]
 
 MC_SERVER: str = os.getenv("MC_SERVER", "")
 
@@ -23,11 +21,13 @@ def require_token() -> None:
     if not DISCORD_TOKEN:
         raise RuntimeError("DISCORD_TOKEN is not set. Put it in .env or environment.")
 
+
 # RCON configuration
-def _get_bool(value: Optional[str]) -> bool:
+def _get_bool(value: str | None) -> bool:
     if value is None:
         return False
     return value.strip().lower() in {"1", "true", "yes", "on"}
+
 
 RCON_ENABLED: bool = _get_bool(os.getenv("RCON_ENABLED", "false"))
 RCON_HOST: str = os.getenv("RCON_HOST", "127.0.0.1")
@@ -50,7 +50,7 @@ except ValueError:
 AUTO_SYNC_REMOVE_EXTRAS: bool = _get_bool(os.getenv("AUTO_SYNC_REMOVE_EXTRAS", "false"))
 
 # Log channel
-LOG_CHANNEL_ID: Optional[int] = None
+LOG_CHANNEL_ID: int | None = None
 try:
     lcid = os.getenv("LOG_CHANNEL_ID", "").strip()
     LOG_CHANNEL_ID = int(lcid) if lcid else None
@@ -64,14 +64,14 @@ except ValueError:
     SYNC_COOLDOWN_SECONDS = 30
 
 # Onboarding / verification
-VERIFIED_ROLE_ID: Optional[int] = None
+VERIFIED_ROLE_ID: int | None = None
 try:
     vrole = os.getenv("VERIFIED_ROLE_ID", "").strip()
     VERIFIED_ROLE_ID = int(vrole) if vrole else None
 except ValueError:
     VERIFIED_ROLE_ID = None
 
-VERIFY_LOG_CHANNEL_ID: Optional[int] = None
+VERIFY_LOG_CHANNEL_ID: int | None = None
 try:
     vlc = os.getenv("VERIFY_LOG_CHANNEL_ID", "").strip()
     VERIFY_LOG_CHANNEL_ID = int(vlc) if vlc else None
@@ -86,14 +86,14 @@ except ValueError:
     BACKUP_MAX_KEEP = 10
 
 # Moderation
-MOD_LOG_CHANNEL_ID: Optional[int] = None
+MOD_LOG_CHANNEL_ID: int | None = None
 try:
     mlc = os.getenv("MOD_LOG_CHANNEL_ID", "").strip()
     MOD_LOG_CHANNEL_ID = int(mlc) if mlc else None
 except ValueError:
     MOD_LOG_CHANNEL_ID = None
 
-MUTE_ROLE_ID: Optional[int] = None
+MUTE_ROLE_ID: int | None = None
 try:
     mrole = os.getenv("MUTE_ROLE_ID", "").strip()
     MUTE_ROLE_ID = int(mrole) if mrole else None
