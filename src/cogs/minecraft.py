@@ -52,5 +52,5 @@ class Minecraft(commands.Cog):
             await interaction.response.send_message(f"Failed to query status: {e}", ephemeral=True)
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(Minecraft(bot))
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Minecraft(bot))

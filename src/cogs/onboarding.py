@@ -176,5 +176,5 @@ class Onboarding(commands.Cog):
         await interaction.followup.send((removed_msg + role_msg + "User unverified.").strip(), ephemeral=True)
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(Onboarding(bot))
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Onboarding(bot))

@@ -571,5 +571,5 @@ class Management(commands.Cog):
         await interaction.response.send_message("Status:\n" + "\n".join(lines), ephemeral=True)
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(Management(bot))
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Management(bot))
