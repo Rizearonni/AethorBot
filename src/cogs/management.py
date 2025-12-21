@@ -460,8 +460,6 @@ class Management(commands.Cog):
             await interaction.followup.send("No valid names found in file.", ephemeral=True)
             return
 
-        from src.utils.store import add_to_whitelist, read_whitelist
-
         added = 0
         already = 0
         for n in names:
@@ -509,8 +507,6 @@ class Management(commands.Cog):
     @app_commands.command(name="whitelist_export", description="Export whitelist as JSON or CSV file")
     @app_commands.default_permissions(administrator=True)
     async def whitelist_export_slash(self, interaction: discord.Interaction, as_csv: bool = False):
-        from src.utils.store import read_whitelist
-
         await interaction.response.defer(ephemeral=True)
         names = read_whitelist()
         if as_csv:

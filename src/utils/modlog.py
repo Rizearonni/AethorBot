@@ -1,5 +1,3 @@
-from typing import Optional
-
 import discord
 
 from src.config import MOD_LOG_CHANNEL_ID
