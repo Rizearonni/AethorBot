@@ -12,6 +12,13 @@ try:
 except ValueError:
     GUILD_ID = None
 
+APPLICATION_ID: int | None = None
+try:
+    aid = os.getenv("APPLICATION_ID", "0").strip()
+    APPLICATION_ID = int(aid) or None
+except ValueError:
+    APPLICATION_ID = None
+
 ADMIN_ROLE_IDS: list[int] = [int(x) for x in os.getenv("ADMIN_ROLE_IDS", "").split(",") if x.strip().isdigit()]
 
 MC_SERVER: str = os.getenv("MC_SERVER", "")

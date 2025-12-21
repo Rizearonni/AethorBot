@@ -8,6 +8,7 @@ import discord
 from discord.ext import commands
 
 from src.config import (
+    APPLICATION_ID,
     DISCORD_TOKEN,
     GUILD_ID,
     HEALTHCHECK_ENABLED,
@@ -52,7 +53,7 @@ class AethorBot(commands.Bot):
 def build_bot() -> commands.Bot:
     intents = discord.Intents.default()
     intents.message_content = True  # for prefix commands
-    bot = AethorBot(command_prefix="!", intents=intents)
+    bot = AethorBot(command_prefix="!", intents=intents, application_id=APPLICATION_ID)
     return bot
 
 
@@ -85,8 +86,7 @@ def main() -> None:
         if args.sync:
             try:
                 if GUILD_ID:
-                    guild = discord.Object(id=GUILD_ID)
-                    await bot.tree.sync(guild=guild)
+                    await bot.tree.sync(guild=discord.Object(id=GUILD_ID))
                     logger.info(f"Synced slash commands to guild {GUILD_ID}")
                 else:
                     await bot.tree.sync()
