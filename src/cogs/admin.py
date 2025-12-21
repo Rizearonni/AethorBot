@@ -80,5 +80,5 @@ class Admin(commands.Cog):
             await interaction.response.send_message(f"Failed to sync: {e}", ephemeral=True)
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(Admin(bot))
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Admin(bot))

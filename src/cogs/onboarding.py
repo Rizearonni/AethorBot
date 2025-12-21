@@ -7,7 +7,7 @@ from src.utils import rcon
 from src.utils.mc_online import is_player_online
 from src.utils.mojang import fetch_uuid
 from src.utils.players import delete_player, get_player, set_player
-from src.utils.store import add_to_whitelist
+from src.utils.store import add_to_whitelist, remove_from_whitelist
 
 
 class Onboarding(commands.Cog):
@@ -86,8 +86,6 @@ class Onboarding(commands.Cog):
         # Remove whitelist locally and via RCON
         removed_msg = ""
         if mc_name:
-            from src.utils.store import remove_from_whitelist
-
             removed = remove_from_whitelist(mc_name)
             removed_msg = "Removed from whitelist. " if removed else "Not found on whitelist. "
             if removed and rcon.is_enabled():
@@ -138,8 +136,6 @@ class Onboarding(commands.Cog):
 
         removed_msg = ""
         if mc_name:
-            from src.utils.store import remove_from_whitelist
-
             removed = remove_from_whitelist(mc_name)
             removed_msg = f"Removed {mc_name} from whitelist. " if removed else f"{mc_name} not on whitelist. "
             if removed and rcon.is_enabled():
@@ -176,5 +172,5 @@ class Onboarding(commands.Cog):
         await interaction.followup.send((removed_msg + role_msg + "User unverified.").strip(), ephemeral=True)
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(Onboarding(bot))
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Onboarding(bot))

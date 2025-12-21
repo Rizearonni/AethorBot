@@ -4,7 +4,6 @@ import time
 from collections.abc import Callable
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
-from typing import Optional
 
 
 class _ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
