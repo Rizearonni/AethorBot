@@ -86,6 +86,7 @@ def main() -> None:
         if args.sync:
             try:
                 if GUILD_ID:
+                    bot.tree.copy_global_to(guild=discord.Object(id=GUILD_ID))
                     await bot.tree.sync(guild=discord.Object(id=GUILD_ID))
                     logger.info(f"Synced slash commands to guild {GUILD_ID}")
                 else:
